@@ -4,12 +4,12 @@ import java.net.URL;
 
 public class Book {
     private URL mImageUrl;
-    private String mBookName;
+    private String mBookTitle;
     private String mBookAuthor;
 
-    public Book (URL imageUrl, String bookName, String bookAuthor){
+    public Book (URL imageUrl, String bookTitle, String bookAuthor){
         mImageUrl = imageUrl;
-        mBookName = bookName;
+        mBookTitle = bookTitle;
         mBookAuthor = bookAuthor;
     }
 
@@ -17,8 +17,8 @@ public class Book {
         return mImageUrl;
     }
 
-    public String getmBookName() {
-        return mBookName;
+    public String getmBookTitle() {
+        return mBookTitle;
     }
 
     public String getmBookAuthor() {
