@@ -20,9 +20,9 @@ public class MainActivity extends AppCompatActivity {
 
         ListView booksListView = (ListView) findViewById(R.id.list);
 
-        ArrayList<Book> books = new ArrayList<>();
+        ArrayList<Book> books = QueryUtils.extractBooks();
 
-        books.add(new Book("http://books.google.com/books/content?id=qKFDDAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api", "Android", "P.K. Dixit"));
+//        books.add(new Book("http://books.google.com/books/content?id=qKFDDAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api", "Android", "P.K. Dixit"));
 
         // Create a new {@link ArrayAdapter} of books
         BookAdapter adapter = new BookAdapter(this, books);
