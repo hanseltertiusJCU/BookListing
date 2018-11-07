@@ -1,7 +1,11 @@
 package com.example.android.booklisting;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.net.MalformedURLException;
@@ -22,12 +26,27 @@ public class MainActivity extends AppCompatActivity {
 
         ArrayList<Book> books = QueryUtils.extractBooks();
 
-//        books.add(new Book("http://books.google.com/books/content?id=qKFDDAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api", "Android", "P.K. Dixit"));
-
         // Create a new {@link ArrayAdapter} of books
-        BookAdapter adapter = new BookAdapter(this, books);
+        final BookAdapter adapter = new BookAdapter(this, books);
 
         booksListView.setAdapter(adapter);
+
+        // Set onItemClickListener into the ListView
+        booksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get a Book object
+                Book currentBook = adapter.getItem(position);
+
+                // Create an Uri object from String URL object
+                Uri bookUri = Uri.parse(currentBook.getmBookUrl());
+
+                // Create an implicit intent that takes URI object
+                Intent playStoreIntent = new Intent(Intent.ACTION_VIEW, bookUri);
+                // Launch a new activity to view the earthquake URI
+                startActivity(playStoreIntent);
+            }
+        });
 
     }
 }
