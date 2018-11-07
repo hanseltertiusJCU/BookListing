@@ -23,7 +23,8 @@ public final class QueryUtils {
     /** Tag for the log messages */
     private static final String LOG_TAG = QueryUtils.class.getSimpleName();
 
-    private static final String BOOKS_API_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=android";
+    // We temporarily use public
+    public static final String BOOKS_API_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=android";
 
     private QueryUtils(){
 
@@ -35,8 +36,10 @@ public final class QueryUtils {
      */
     public static List<Book> fetchBooksData(String requestUrl){
 
+        // Create URL object
         URL url = createUrl(requestUrl);
 
+        // Perform HTTP request to the URL and receive a JSON response back
         String jsonResponse = null;
         try{
             jsonResponse = makeHttpRequest(url);
@@ -50,8 +53,7 @@ public final class QueryUtils {
 
         Log.e(LOG_TAG, "Fetching the data from List<Book> object");
 
-        // Return the {@link List<Book>} object as the
-        // result fo the {@link BookAsyncTask (to do later)}
+        // Return the {@link List<Book>} object
         return books;
     }
 
@@ -84,8 +86,8 @@ public final class QueryUtils {
                 JSONObject currentBook = bookArray.getJSONObject(i);
 
                 // For a given books, extract the JSONObject associated with the
-                // key called "volumeInfo", which represents a list of all volumeInfo
-                // for that earthquake.
+                // key called "volumeInfo", which represents a list of all volume info
+                // for that book.
                 JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
 
                 // Extract the value for the key called "smallThumbnail"
@@ -130,7 +132,7 @@ public final class QueryUtils {
     }
 
     /**
-     *
+     * Returns new URL object from the given string URL.
      */
     private static URL createUrl(String stringUrl){
         URL url = null;
@@ -143,7 +145,7 @@ public final class QueryUtils {
     }
 
     /**
-     *
+     * Make an HTTP request to the given URL and return a String as the response.
      */
     private static String makeHttpRequest(URL url) throws IOException {
         String jsonResponse = "";
