@@ -10,14 +10,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Create an implicit intent that takes URI object
                 Intent playStoreIntent = new Intent(Intent.ACTION_VIEW, bookUri);
-                // Launch a new activity to view the earthquake URI
+                // Launch a new activity to view the book URI
                 startActivity(playStoreIntent);
             }
         });
@@ -80,9 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(List<Book> book) {
-            // Clear the adapter of previous earthquake data
-            adapter.clear();
-            // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
+            // Clear the adapter of previous book data
+//            adapter.clear();
+            // If there is a valid list of {@link Book}s, then add them to the adapter's
             // data set. This will trigger the ListView to update.
             if (book != null && ! book.isEmpty()) {
                 adapter.addAll(book);

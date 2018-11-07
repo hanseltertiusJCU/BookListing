@@ -73,7 +73,7 @@ public final class QueryUtils {
         // Catch the exception so the app doesn't crash, and print the error message to the logs.
         try{
             // Create a JSONObject from the SAMPLE_JSON_RESPONSE string
-            JSONObject baseJsonResponse = new JSONObject(BOOKS_API_REQUEST_URL);
+            JSONObject baseJsonResponse = new JSONObject(booksJSON);
 
             // Extract the JSONArray associated with the key called "items",
             // which represents a list of items (or books).
