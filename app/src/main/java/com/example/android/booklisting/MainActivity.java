@@ -1,7 +1,11 @@
 package com.example.android.booklisting;
 
+import android.app.LoaderManager;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -18,12 +22,22 @@ import android.widget.SearchView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderCallbacks<List<Book>> {
 
     /** Tag for the log messages */
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
+    /**
+     * Constant value for the book loader ID. We can choose any integer.
+     * This really only comes into play if you're using multiple loaders.
+     */
+    private static final int BOOK_LOADER_ID = 1;
+
     private BookAdapter adapter;
+    private SearchView searchTextView;
+
+    // The callbacks through which we will interact with the LoaderManager.
+    private LoaderManager.LoaderCallbacks<Cursor> mCallbacks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +46,11 @@ public class MainActivity extends AppCompatActivity {
 
         final ListView booksListView = (ListView) findViewById(R.id.list);
 
-        final SearchView searchTextView = (SearchView) findViewById(R.id.search_text);
+        searchTextView = (SearchView) findViewById(R.id.search_text);
+
+        LoaderManager loaderManager = getLoaderManager();
+
+        loaderManager.initLoader(BOOK_LOADER_ID, null, this);
 
         // Set the SearchView listener for handling inputs
         searchTextView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -40,8 +58,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Start the BookAsyncTask
-                BookAsyncTask task = new BookAsyncTask();
-                task.execute(QueryUtils.getUrl(searchTextView.getQuery().toString()));
+                getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
                 return false;
             }
 
@@ -83,9 +100,8 @@ public class MainActivity extends AppCompatActivity {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start the BookAsyncTask
-                BookAsyncTask task = new BookAsyncTask();
-                task.execute(QueryUtils.getUrl(searchTextView.getQuery().toString()));
+
+                getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
 
                 // Search for LinearLayout
                 LinearLayout mainLayout = (LinearLayout) findViewById(R.id.mainLayout);
@@ -98,31 +114,30 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class BookAsyncTask extends AsyncTask<String, Void, List<Book>> {
-        @Override
-        protected List<Book> doInBackground(String... urls) {
-            // Don't perform the request if there are no URLs, or the first URL is null
-            if (urls.length < 1 || urls[0] == null) {
-                return null;
-            }
+    @Override
+    public Loader<List<Book>> onCreateLoader(int id, Bundle args) {
+        Uri baseUri = Uri.parse(QueryUtils.getUrl(searchTextView.getQuery().toString()));
+        Uri.Builder uriBuilder = baseUri.buildUpon();
 
-            List<Book> booksList = QueryUtils.fetchBooksData(urls[0]);
+        return new BookLoader(this, uriBuilder.toString());
+    }
 
-            // Return the {@link List<Book>} object
-            return booksList;
+    @Override
+    public void onLoadFinished(Loader<List<Book>> loader, List<Book> book) {
+        // Clear the adapter of previous book data (in order to avoid deletion on empty adapter)
+        if(adapter != null){
+            adapter.clear();
         }
-
-        @Override
-        protected void onPostExecute(List<Book> book) {
-            // Clear the adapter of previous book data (in order to avoid )
-            if(adapter != null){
-                adapter.clear();
-            }
-            // If there is a valid list of {@link Book}s, then add them to the adapter's
-            // data set. This will trigger the ListView to update.
-            if (book != null && ! book.isEmpty()) {
-                adapter.addAll(book);
-            }
+        // If there is a valid list of {@link Book}s, then add them to the adapter's
+        // data set. This will trigger the ListView to update.
+        if (book != null && ! book.isEmpty()) {
+            adapter.addAll(book);
         }
     }
+
+    @Override
+    public void onLoaderReset(Loader<List<Book>> loader) {
+        adapter.clear();
+    }
+
 }
