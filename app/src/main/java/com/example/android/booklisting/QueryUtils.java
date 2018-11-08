@@ -23,11 +23,18 @@ public final class QueryUtils {
     /** Tag for the log messages */
     private static final String LOG_TAG = QueryUtils.class.getSimpleName();
 
-    // We temporarily use public
-    public static final String BOOKS_API_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=android";
+    // We temporarily use public (and we have to find the way to adapt to search for links)
+    private static final String BOOKS_API_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=";
+
+    private static String imageUrl;
+    private static String authorsList;
 
     private QueryUtils(){
 
+    }
+
+    public static String getUrl(String searchText){
+        return BOOKS_API_REQUEST_URL + searchText;
     }
 
     /**
@@ -90,27 +97,32 @@ public final class QueryUtils {
                 // for that book.
                 JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
 
-                // Extract the value for the key called "smallThumbnail"
-                String imageUrl = (volumeInfo.getJSONObject("imageLinks")).getString("smallThumbnail");
+                // Extract the value for the key called "smallThumbnail" (need to get value imagelinks)
+                if(volumeInfo.has("imageLinks")){
+                    imageUrl = (volumeInfo.getJSONObject("imageLinks")).getString("smallThumbnail");
+                }
+
 
                 // Extract the value for the key called "title"
                 String bookTitle = volumeInfo.getString("title");
 
                 // Get the JSONArray from JSONObject called volumeInfo that extracts
                 // the value for the key called "authors"
-                JSONArray bookAuthorsList = volumeInfo.getJSONArray("authors");
+                if(volumeInfo.has("authors")){
+                    JSONArray bookAuthorsList = volumeInfo.getJSONArray("authors");
 
-                // Create a String object that retrieve a list of authors
-                String authorsList = "";
+                    // Create a String object that retrieve a list of authors
+                    authorsList = "";
 
-                // Loop for adding object(s) in bookAuthorsList into the authorsList
-                for (int a = 0; a < bookAuthorsList.length(); a++){
-                    if(a == bookAuthorsList.length() - 1){
-                        authorsList += (String) bookAuthorsList.get(a);
-                    } else {
-                        authorsList += bookAuthorsList.get(a) + ", ";
+                    // Loop for adding object(s) in bookAuthorsList into the authorsList
+                    for (int a = 0; a < bookAuthorsList.length(); a++){
+                        if(a == bookAuthorsList.length() - 1){
+                            authorsList += (String) bookAuthorsList.get(a);
+                        } else {
+                            authorsList += bookAuthorsList.get(a) + ", ";
+                        }
+
                     }
-
                 }
 
                 // Extract the value for the key called "infoLink"
