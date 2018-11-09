@@ -8,6 +8,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +18,9 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.SearchView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,30 +38,51 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
 
     private BookAdapter adapter;
     private SearchView searchTextView;
+    private TextView mEmptyStateTextView;
+    private View loadingIndicator;
+    private ListView booksListView;
 
-    // The callbacks through which we will interact with the LoaderManager.
-    private LoaderManager.LoaderCallbacks<Cursor> mCallbacks;
+    private static final String LIST_STATE = "listState";
+    private Parcelable mListState = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final ListView booksListView = (ListView) findViewById(R.id.list);
+        booksListView = (ListView) findViewById(R.id.list);
 
+        // Search for View that shows loading indicator
+        loadingIndicator = findViewById(R.id.loading_indicator);
+
+        // Search for SearchView
         searchTextView = (SearchView) findViewById(R.id.search_text);
 
+        // Create a LoaderManager object by calling getLoaderManager() method
         LoaderManager loaderManager = getLoaderManager();
 
         loaderManager.initLoader(BOOK_LOADER_ID, null, this);
+
+        mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+        booksListView.setEmptyView(mEmptyStateTextView);
 
         // Set the SearchView listener for handling inputs
         searchTextView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             // Do something when we click "Submit" button
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // Start the BookAsyncTask
+
+                mEmptyStateTextView.setText(null);
+
+                booksListView.setVisibility(View.GONE);
+
+                loadingIndicator.setVisibility(View.VISIBLE);
+
+                // Restart the loader
                 getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
+
+                // Disable the searchTextView after clicking on "Submit/Enter" button
+                searchTextView.clearFocus();
                 return false;
             }
 
@@ -101,14 +125,16 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
             @Override
             public void onClick(View v) {
 
+                mEmptyStateTextView.setText(null);
+
+                booksListView.setVisibility(View.GONE);
+
+                loadingIndicator.setVisibility(View.VISIBLE);
+
                 getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
 
-                // Search for LinearLayout
-                LinearLayout mainLayout = (LinearLayout) findViewById(R.id.mainLayout);
-
-                // Hide the keyboard after clicking on searchButton
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(mainLayout.getWindowToken(), 0);
+                // Disable the searchTextView after clicking on "Search" button
+                searchTextView.clearFocus();
             }
         });
 
@@ -124,6 +150,15 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
 
     @Override
     public void onLoadFinished(Loader<List<Book>> loader, List<Book> book) {
+
+        // Hide loading indicator because the data has been loaded
+        loadingIndicator.setVisibility(View.GONE);
+
+        booksListView.setVisibility(View.VISIBLE);
+
+        // Set empty state text to display "There are no books to display."
+        mEmptyStateTextView.setText(R.string.no_books_data);
+
         // Clear the adapter of previous book data (in order to avoid deletion on empty adapter)
         if(adapter != null){
             adapter.clear();
@@ -133,6 +168,11 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         if (book != null && ! book.isEmpty()) {
             adapter.addAll(book);
         }
+
+        // Restore the ListView scroll position after the loader finished on loading
+        if (mListState != null)
+            booksListView.onRestoreInstanceState(mListState);
+
     }
 
     @Override
@@ -140,4 +180,28 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         adapter.clear();
     }
 
+    // Restore the ListView scroll position
+    @Override
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        mListState = state.getParcelable(LIST_STATE);
+    }
+
+    // Disable the SearchView when resuming the Activity as well as restoring the
+    // ListView scroll position by calling onRestoreInstanceState method
+    @Override
+    protected void onResume() {
+        super.onResume();
+        searchTextView.clearFocus();
+        if (mListState != null)
+            booksListView.onRestoreInstanceState(mListState);
+    }
+
+    // Save the listView scroll position
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        mListState = booksListView.onSaveInstanceState();
+        state.putParcelable(LIST_STATE, mListState);
+    }
 }

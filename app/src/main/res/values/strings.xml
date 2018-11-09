@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">BookListing</string>
     <string name="search_text">Search</string>
+    <string name="search_default_text">Search book title</string>
+    <string name="no_books_data">There are no books to display.</string>
+    <string name="no_internet">There is no internet connection.</string>
 </resources>

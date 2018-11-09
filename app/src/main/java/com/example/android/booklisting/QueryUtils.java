@@ -43,6 +43,13 @@ public final class QueryUtils {
      */
     public static List<Book> fetchBooksData(String requestUrl){
 
+        // Test for loading spinner (after that we delete it)
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         // Create URL object
         URL url = createUrl(requestUrl);
 
