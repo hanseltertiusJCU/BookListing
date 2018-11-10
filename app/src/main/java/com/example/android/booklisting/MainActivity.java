@@ -5,22 +5,16 @@ import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -29,7 +23,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LoaderCallbacks<List<Book>> {
 
-    /** Tag for the log messages */
+    /**
+     * Tag for the log messages
+     */
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     /**
@@ -37,14 +33,19 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
      * This really only comes into play if you're using multiple loaders.
      */
     private static final int BOOK_LOADER_ID = 1;
-
+    /**
+     * Create a constant called LIST_STATE to be used on a
+     * global variable that represents Parcelable object
+     */
+    private static final String LIST_STATE = "listState";
+    /**
+     * Create several global variables for Views and Adapter to be used in multiple places.
+     */
     private BookAdapter adapter;
     private SearchView searchTextView;
     private TextView mEmptyStateTextView;
     private View loadingIndicator;
     private ListView booksListView;
-
-    private static final String LIST_STATE = "listState";
     private Parcelable mListState = null;
 
     @Override
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Search for ListView
         booksListView = (ListView) findViewById(R.id.list);
 
         // Search for View that shows loading indicator
@@ -60,22 +62,25 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         // Search for SearchView
         searchTextView = (SearchView) findViewById(R.id.search_text);
 
+        // Find the empty state TextView and set the empty view into the ListView
         mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
         booksListView.setEmptyView(mEmptyStateTextView);
 
         // Set the SearchView listener for handling inputs
         searchTextView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            // Do something when we click "Submit" button
+            // Do something when we click "Submit" button, note that "Submit" button
+            // cannot accept empty string as an input.
             @Override
             public boolean onQueryTextSubmit(String query) {
 
+                // Empty the empty state text view and ListView of books and show the loading indicator
                 mEmptyStateTextView.setText(null);
-
                 booksListView.setVisibility(View.GONE);
-
                 loadingIndicator.setVisibility(View.VISIBLE);
 
-                // Restart the loader
+                // Restart the loader. Pass in the int ID constant defined above and pass in null for
+                // the bundle. Pass in this activity for the LoaderCallbacks parameter (which is valid
+                // because this activity implements the LoaderCallbacks interface).
                 getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
 
                 // Disable the searchTextView after clicking on "Submit/Enter" button
@@ -95,9 +100,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         // Create an {@link ArrayList<Book>} object by calling on extractBooks from QueryUtils
         ArrayList<Book> books = QueryUtils.extractBooks(QueryUtils.getUrl(searchTextView.getQuery().toString()));
 
-        // Create a new {@link ArrayAdapter} of books
+        // Create a new {@link ArrayAdapter} of books and set the adapter into the ListView
         adapter = new BookAdapter(MainActivity.this, books);
-
         booksListView.setAdapter(adapter);
 
         // Set onItemClickListener into the ListView
@@ -122,12 +126,14 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
             @Override
             public void onClick(View v) {
 
+                // Empty the empty state text view and ListView of books and show the loading indicator
                 mEmptyStateTextView.setText(null);
-
                 booksListView.setVisibility(View.GONE);
-
                 loadingIndicator.setVisibility(View.VISIBLE);
 
+                // Restart the loader. Pass in the int ID constant defined above and pass in null for
+                // the bundle. Pass in this activity for the LoaderCallbacks parameter (which is valid
+                // because this activity implements the LoaderCallbacks interface).
                 getLoaderManager().restartLoader(BOOK_LOADER_ID, null, MainActivity.this);
 
                 // Disable the searchTextView after clicking on "Search" button
@@ -141,7 +147,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         // Get details on the currently active default data network
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
-        if(networkInfo != null && networkInfo.isConnected()) {
+        // If there is a network connection, fetch data
+        if (networkInfo != null && networkInfo.isConnected()) {
             // Create a LoaderManager object by calling getLoaderManager() method,
             // which is to interact with loader
             LoaderManager loaderManager = getLoaderManager();
@@ -160,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
 
     }
 
+    // Parse the URI from the Url and create a{@link BookLoader} object
     @Override
     public Loader<List<Book>> onCreateLoader(int id, Bundle args) {
         Uri baseUri = Uri.parse(QueryUtils.getUrl(searchTextView.getQuery().toString()));
@@ -168,12 +176,13 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         return new BookLoader(this, uriBuilder.toString());
     }
 
+
+    // Display the result when a Loader is finished loading
     @Override
     public void onLoadFinished(Loader<List<Book>> loader, List<Book> book) {
 
-        // Hide loading indicator because the data has been loaded
+        // Hide loading indicator because the data has been loaded and show the ListView of books
         loadingIndicator.setVisibility(View.GONE);
-
         booksListView.setVisibility(View.VISIBLE);
 
         // Get a reference to the ConnectivityManager to check state of network connectivity
@@ -182,7 +191,8 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         // Get details on the currently active default data network
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 
-        if(networkInfo != null && networkInfo.isConnected()) {
+        // Check if there is a network connection, which affects the empty state text view output
+        if (networkInfo != null && networkInfo.isConnected()) {
             // Set empty state text to display "There are no books to display."
             mEmptyStateTextView.setText(R.string.no_books_data);
         } else {
@@ -191,12 +201,12 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
         }
 
         // Clear the adapter of previous book data (in order to avoid deletion on empty adapter)
-        if(adapter != null){
+        if (adapter != null) {
             adapter.clear();
         }
         // If there is a valid list of {@link Book}s, then add them to the adapter's
         // data set. This will trigger the ListView to update.
-        if (book != null && ! book.isEmpty()) {
+        if (book != null && !book.isEmpty()) {
             adapter.addAll(book);
         }
 
@@ -206,12 +216,14 @@ public class MainActivity extends AppCompatActivity implements LoaderCallbacks<L
 
     }
 
+    // Reset the loader (such as the occasion when rotating the screen)
+    // by clearing the contents of adapter
     @Override
     public void onLoaderReset(Loader<List<Book>> loader) {
         adapter.clear();
     }
 
-    // Restore the ListView scroll position
+    // Restore the ListView scroll position by getting a constant value
     @Override
     protected void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);

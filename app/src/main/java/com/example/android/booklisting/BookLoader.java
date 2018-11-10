@@ -6,14 +6,20 @@ import java.util.List;
 
 public class BookLoader extends AsyncTaskLoader<List<Book>> {
 
-    /** Tag for log messages */
+    /**
+     * Tag for log messages
+     */
     private static final String LOG_TAG = BookLoader.class.getName();
 
-    /** Query URL */
+    /**
+     * Query URL
+     */
     private String mUrl;
 
-    /** Constructor for loader*/
-    public BookLoader(MainActivity context, String url){
+    /**
+     * Constructor for loader
+     */
+    public BookLoader(MainActivity context, String url) {
         super(context);
         mUrl = url;
     }
