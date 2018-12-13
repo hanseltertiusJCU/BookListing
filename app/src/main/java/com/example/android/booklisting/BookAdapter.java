@@ -3,7 +3,6 @@ package com.example.android.booklisting;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,9 +12,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.List;
 
 public class BookAdapter extends ArrayAdapter<Book> {
@@ -34,11 +30,8 @@ public class BookAdapter extends ArrayAdapter<Book> {
 
         Book currentBook = getItem(position);
 
-        ImageView imageURL = (ImageView) listItemView.findViewById(R.id.imageItem);
-        imageURL.setTag(currentBook.getmImageUrl());
-        new DownloadImagesTask().execute(imageURL);
-
-//        Picasso.with(getContext()).load(currentBook.getmImageUrl()).into(imageURL);
+        ImageView bookImageView = (ImageView) listItemView.findViewById(R.id.imageItem);
+        bookImageView.setImageBitmap(formatImageFromBitmap(currentBook.getmImageUrlBitmap()));
 
         TextView bookTitle = (TextView) listItemView.findViewById(R.id.bookTitle);
         bookTitle.setText(currentBook.getmBookTitle());
@@ -49,4 +42,21 @@ public class BookAdapter extends ArrayAdapter<Book> {
         return listItemView;
     }
 
+    // Get the thumbnail image
+    private Bitmap formatImageFromBitmap(Bitmap bookThumbnail) {
+        // Bitmap for image
+        Bitmap bitmapResult;
+        // Check if the thumbnail is valid
+        if (bookThumbnail == null) {
+            // If not valid return default image
+            bitmapResult = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.no_image_available);
+        } else {
+            // If valid return image based on book thumbnail
+            bitmapResult = bookThumbnail;
+        }
+        // Return bitmap
+        return bitmapResult;
+    }
+
 }
+

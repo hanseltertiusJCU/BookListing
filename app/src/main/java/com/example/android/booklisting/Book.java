@@ -1,20 +1,22 @@
 package com.example.android.booklisting;
 
+import android.graphics.Bitmap;
+
 public class Book {
-    private String mImageUrl;
+    private Bitmap mImageUrlBitmap;
     private String mBookTitle;
     private String mBookAuthor;
     private String mBookUrl;
 
-    public Book (String imageUrl, String bookTitle, String bookAuthor, String bookUrl){
-        mImageUrl = imageUrl;
+    public Book (Bitmap imageUrlBitmap, String bookTitle, String bookAuthor, String bookUrl){
+        mImageUrlBitmap = imageUrlBitmap;
         mBookTitle = bookTitle;
         mBookAuthor = bookAuthor;
         mBookUrl = bookUrl;
     }
 
-    public String getmImageUrl() {
-        return mImageUrl;
+    public Bitmap getmImageUrlBitmap() {
+        return mImageUrlBitmap;
     }
 
     public String getmBookTitle() {

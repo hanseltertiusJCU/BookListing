@@ -1,5 +1,8 @@
 package com.example.android.booklisting;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -28,7 +31,6 @@ public final class QueryUtils {
     // We temporarily use public (and we have to find the way to adapt to search for links)
     private static final String BOOKS_API_REQUEST_URL = "https://www.googleapis.com/books/v1/volumes?q=";
 
-    private static String imageUrl;
     private static String authorsList;
 
     private QueryUtils() {
@@ -109,9 +111,17 @@ public final class QueryUtils {
                 // for that book.
                 JSONObject volumeInfo = currentBook.getJSONObject("volumeInfo");
 
+                // Declare String variable to hold thumbnail by putting image URL
+                String imageUrl;
+                // Declare Bitmap variable to be passed into the custom class
+                Bitmap thumbnailBitmap = null;
+
                 // Extract the value for the key called "smallThumbnail" (need to get value imagelinks)
                 if (volumeInfo.has("imageLinks")) {
                     imageUrl = (volumeInfo.getJSONObject("imageLinks")).getString("smallThumbnail");
+                    // Create a new URL object based on imageUrl
+                    URL url = new URL(imageUrl);
+                    thumbnailBitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
                 }
 
 
@@ -142,7 +152,7 @@ public final class QueryUtils {
 
                 // Create a new {@link Book} object with the imageUrl, bookTitle and authorsList
                 // from the JSON response.
-                Book book = new Book(imageUrl, bookTitle, authorsList, bookLink);
+                Book book = new Book(thumbnailBitmap, bookTitle, authorsList, bookLink);
 
                 // Add the new {@link Book} to the list of books.
                 books.add(book);
@@ -150,6 +160,10 @@ public final class QueryUtils {
             }
         } catch (JSONException e) {
             Log.e("QueryUtils", "Problem parsing the book JSON results", e);
+        } catch (MalformedURLException e) {
+            Log.e("QueryUtils", "There is Malformed URL", e);
+        } catch (IOException e) {
+            Log.e("QueryUtils", "There is I/O Exception", e);
         }
 
         return books;
